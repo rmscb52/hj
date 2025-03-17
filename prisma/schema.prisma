@@ -1,0 +1,89 @@
+// This is a schema file for Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String
+  role          Role      @default(PARENT)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  posts         Post[]
+  comments      Comment[]
+}
+
+enum Role {
+  PARENT
+  THERAPIST
+}
+
+model Checklist {
+  id        String   @id @default(cuid())
+  userId    String
+  ageGroup  String
+  answers   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TherapyRoom {
+  id          String   @id @default(cuid())
+  name        String   // 치료실 이름
+  address     String   // 주소
+  phone       String   // 전화번호
+  description String   // 설명
+  images      String   // 이미지 URL JSON 문자열
+  specialties String   // 전문 분야 JSON 문자열
+  latitude    Float    // 위도
+  longitude   Float    // 경도
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WelfareInfo {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  category    String
+  target      String
+  department  String
+  contact     String
+  link        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Post {
+  id        String    @id @default(cuid())
+  title     String    // 제목
+  content   String    // 내용
+  category  String    // 카테고리 (질문, 정보공유, 일상)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  likes     Int       @default(0)
+  comments  Comment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   // 내용
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
